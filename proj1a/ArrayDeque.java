@@ -40,45 +40,50 @@ public class ArrayDeque<T> {
         if (index >= size) {
             return null;
         }
-        return items[index];
+        int indexFromFront = nextFirst + 1 + index;
+        if (indexFromFront >= capacity) {
+            indexFromFront -= capacity;
+        }
+        return items[indexFromFront];
     }
 
-    public void resize(int capacity) {
-        T[] newItems = (T[]) new Object[capacity];
+    private void resize(int newCapacity) {
+        T[] newItems = (T[]) new Object[newCapacity];
         int currentFirst = plusOne(nextFirst);
         int currentLast = minusOne(nextLast);
 
         if (currentFirst < currentLast) {
             int length = currentLast - currentFirst + 1;
             System.arraycopy(items, currentFirst, newItems, 0, length);
-            nextFirst = capacity - 1;
+            nextFirst = newCapacity - 1;
             nextLast = length;
         } else {
-            int lengthFirst = this.capacity - currentFirst;
-            int newCurrentFirst = capacity - lengthFirst;
+            int lengthFirst = capacity - currentFirst;
+            int newCurrentFirst = newCapacity - lengthFirst;
             int lengthLast = nextLast;
             System.arraycopy(items, currentFirst, newItems, newCurrentFirst, lengthFirst);
             System.arraycopy(items, 0, newItems, 0, lengthLast);
+            nextFirst = newCapacity - lengthFirst - 1;
         }
-        this.capacity = capacity;
+        capacity = newCapacity;
         items = newItems;
 
     }
 
-    public void expand() {
+    private void expand() {
         if (size == capacity) {
             resize(capacity * eFactor);
         }
     }
 
-    public void shrink() {
-        double ratio = size/capacity;
-        if (capacity >= 16 && ratio <= 0.25) {
+    private void shrink() {
+        double ratio = (double) size / capacity;
+        if (capacity >= 16 && ratio < 0.25) {
             resize(capacity / sFactor);
         }
     }
 
-    public int minusOne(int index) {
+    private int minusOne(int index) {
         if (index == 0) {
             return capacity - 1;
         } else {
@@ -86,7 +91,7 @@ public class ArrayDeque<T> {
         }
     }
 
-    public int plusOne(int index) {
+    private int plusOne(int index) {
         if (index == capacity - 1) {
             return 0;
         } else {
@@ -106,7 +111,7 @@ public class ArrayDeque<T> {
         items[nextLast] = item;
         nextLast = plusOne(nextLast);
         size += 1;
-        shrink();
+        expand();
     }
 
     public T removeFirst() {
