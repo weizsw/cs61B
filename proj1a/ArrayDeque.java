@@ -123,7 +123,7 @@ public class ArrayDeque<T> {
         T removed = items[currentFirst];
         items[currentFirst] = null;
         nextFirst = currentFirst;
-
+        size -= 1;
         shrink();
         return removed;
     }
@@ -137,7 +137,7 @@ public class ArrayDeque<T> {
         T removed = items[currentLast];
         items[currentLast] = null;
         nextLast = currentLast;
-
+        size -= 1;
         shrink();
         return removed;
     }
