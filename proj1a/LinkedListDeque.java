@@ -34,7 +34,9 @@ public class LinkedListDeque<T> {
     }
 
     public boolean isEmpty() {
-        if (sentinel.next == sentinel && sentinel.prev == sentinel && size == 0) {
+        if (sentinel.next == sentinel
+            && sentinel.prev == sentinel
+            && size == 0) {
             return true;
         }
         return false;
@@ -106,3 +108,4 @@ public class LinkedListDeque<T> {
         System.out.println();
     }
 }
+
