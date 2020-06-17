@@ -1,4 +1,4 @@
-public class LinkedListDeque<T> {
+public class LinkedListDeque<T> implements Deque<T>{
     private class Node {
         private T item;
         private Node prev;
@@ -35,8 +35,8 @@ public class LinkedListDeque<T> {
 
     public boolean isEmpty() {
         if (sentinel.next == sentinel
-            && sentinel.prev == sentinel
-            && size == 0) {
+                && sentinel.prev == sentinel
+                && size == 0) {
             return true;
         }
         return false;

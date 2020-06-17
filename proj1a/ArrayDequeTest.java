@@ -92,8 +92,14 @@ public class ArrayDequeTest {
     public void testRemoveResize() {
         ArrayDeque<Integer> q = new ArrayDeque<>();
 
-        for (int i = 0; i <= 100; i++) {
+        for (int i = 0; i <= 3; i++) {
             q.addFirst(i);
+        }
+        for (int j = 0; j<= 4; j++) {
+            q.addLast(j);
+        }
+        for (int k = 0; k <= 96; k++) {
+            q.addFirst(k);
         }
         for (int i = 100; i >= 10; i--) {
             int removed = q.removeFirst();
