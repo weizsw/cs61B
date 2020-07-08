@@ -12,8 +12,8 @@ public class PercolationStats {
         }
         times = T;
         fractions = new double[T];
-        int totalsites = N * N;
-        for (int i = 0; i < N; i++) {
+        int totalSites = N * N;
+        for (int i = 0; i < T; i++) {
             int numOpenedSites = 0;
             Percolation test = pf.make(N);
             while (!test.percolates()) {
@@ -24,7 +24,7 @@ public class PercolationStats {
                     numOpenedSites++;
                 }
             }
-            fractions[i] = numOpenedSites / totalsites;
+            fractions[i] = numOpenedSites / totalSites;
         }
 
     }

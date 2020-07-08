@@ -79,4 +79,8 @@ public class Percolation {
         return setWithTopnBottom.connected(top, bottom);
     }
 
+    public static void main(String[] args) {
+
+    }
+
 }
