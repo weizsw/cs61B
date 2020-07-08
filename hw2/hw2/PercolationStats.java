@@ -14,17 +14,15 @@ public class PercolationStats {
         fractions = new double[T];
         int totalSites = N * N;
         for (int i = 0; i < T; i++) {
-            int numOpenedSites = 0;
             Percolation test = pf.make(N);
             while (!test.percolates()) {
                 int x = StdRandom.uniform(N);
                 int y = StdRandom.uniform(N);
                 if (!test.isOpen(x, y)) {
                     test.open(x, y);
-                    numOpenedSites++;
                 }
             }
-            fractions[i] = numOpenedSites / totalSites;
+            fractions[i] = test.numberOfOpenSites() * 1.0 / totalSites;
         }
 
     }
