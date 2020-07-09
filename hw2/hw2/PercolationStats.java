@@ -22,7 +22,7 @@ public class PercolationStats {
                     test.open(x, y);
                 }
             }
-            fractions[i] = (double)test.numberOfOpenSites() / totalSites;
+            fractions[i] = (double) test.numberOfOpenSites() / totalSites;
         }
 
     }
