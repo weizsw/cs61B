@@ -66,17 +66,16 @@ public class Board implements WorldState {
 
     public int hamming() {
         int count = 0;
-        int start = 1;
+
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-
-                if (tiles[i][j] != start) {
-                    count++;
-                }
-                if(tiles[i][j] == 0) {
+                if (tiles[i][j] == N - 1 && j == N - 1) {
                     continue;
                 }
-                start++;
+                if (tiles[i][j] != i * N + j + 1) {
+                    count++;
+                }
+
             }
         }
 
@@ -139,7 +138,7 @@ public class Board implements WorldState {
         s.append(N + "\n");
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                s.append(String.format("%2d ", tileAt(i,j)));
+                s.append(String.format("%2d ", tileAt(i, j)));
             }
             s.append("\n");
         }
@@ -147,4 +146,7 @@ public class Board implements WorldState {
         return s.toString();
     }
 
+    public int hashCode(){
+        return 0;
+    }
 }
