@@ -68,7 +68,7 @@ public class Board implements WorldState {
         int count = 0;
         int start = 1;
         for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N;j ++) {
+            for (int j = 0; j < N; j++) {
 
                 if (tiles[i][j] != start) {
                     count++;
