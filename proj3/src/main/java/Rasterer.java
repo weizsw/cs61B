@@ -8,10 +8,131 @@ import java.util.Map;
  * not draw the output correctly.
  */
 public class Rasterer {
+    private static final double MAX_DPP = 0.00034332275390625;
+    private int depth;
+    private double rasterUllon, rasterUllat, rasterLrlon, rasterLrlat;
+    private int ulx, uly, lrx, lry;
+    private String[][] filenames;
+
+    private class QueryBox {
+        private double ullon, ullat, lrlon, lrlat;
+        private double w, h;
+
+        public QueryBox(double ullon, double ullat, double lrlon, double lrlat) {
+            this.ullon = ullon;
+            this.ullat = ullat;
+            this.lrlon = lrlon;
+            this.lrlat = lrlat;
+        }
+
+        public void setW(double w) {
+            this.w = w;
+        }
+
+        public void setH(double h) {
+            this.h = h;
+        }
+    }
+
+    private class Tile {
+        private double ullon, ullat, lrlon, lrlat;
+
+        public Tile(double ullon, double ullat, double lrlon, double lrlat) {
+            this.ullon = ullon;
+            this.ullat = ullat;
+            this.lrlon = lrlon;
+            this.lrlat = lrlat;
+        }
+    }
 
     public Rasterer() {
-        // YOUR CODE HERE
+
     }
+
+    private void solve(QueryBox queryBox) {
+        getDepth(queryBox);
+        boolean findul = false;
+        boolean findlr = false;
+        for (int i = 0; i < pow2(depth); i++) {
+            for (int j = 0; j < pow2(depth); j++) {
+                Tile boundingBox = getTileArea(depth, i, j);
+                if (boundingBox.lrlon > queryBox.ullon && boundingBox.lrlat < queryBox.ullat) {
+                    rasterUllon = boundingBox.ullon;
+                    rasterUllat = boundingBox.ullat;
+                    ulx = i;
+                    uly = j;
+                    findul = true;
+                    break;
+                }
+            }
+            if (findul) {
+                break;
+            }
+        }
+        for (int i = pow2(depth) - 1; i >= 0; i--) {
+            for (int j = pow2(depth) - 1; j >= 0 ; j--) {
+                Tile boundingBox = getTileArea(depth, i, j);
+                if (boundingBox.ullon < queryBox.lrlon && boundingBox.ullat > queryBox.lrlat) {
+                    rasterLrlon = boundingBox.lrlon;
+                    rasterLrlat = boundingBox.lrlat;
+                    lrx = i;
+                    lry = j;
+                    findlr = true;
+                    break;
+                }
+            }
+            if (findlr) {
+                break;
+            }
+        }
+
+        getFileNames();
+    }
+
+    private void getFileNames() {
+        System.out.println(lrx + " " + lry + " " + ulx + " " + uly);
+        filenames = new String[lry - uly + 1][lrx - ulx + 1];
+        for (int i = 0; i <= lry - uly; i++) {
+            for(int j = 0; j <= lrx - ulx; j++) {
+                filenames[i][j] = "d" + depth + "_x" + (ulx + j) + "_y" + (uly + i) + ".png";
+            }
+        }
+    }
+    private void getDepth(QueryBox queryBox) {
+        double lonDPP = (queryBox.lrlon - queryBox.ullon) / queryBox.w;
+        for (int i = 0; i <= 7; i++) {
+            if (calDepthDpp(i) <= lonDPP) {
+                depth = i;
+                return;
+            }
+        }
+        depth = 7;
+    }
+
+    private double calDepthDpp(int depth) {
+        return MAX_DPP / pow2(depth);
+    }
+
+    private Tile getTileArea(int depth, int x, int y) {
+        double lonDelta = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / pow2(depth);
+        double latDelta = (MapServer.ROOT_ULLAT - MapServer.ROOT_LRLAT) / pow2(depth);
+        double ullon = MapServer.ROOT_ULLON + x * lonDelta;
+        double ullat = MapServer.ROOT_ULLAT - y * latDelta;
+        double lrlon = ullon + lonDelta;
+        double lrlat = ullat - latDelta;
+
+        return new Tile(ullon, ullat, lrlon, lrlat);
+    }
+
+    private int pow2(int n) {
+        int res = 1;
+        while (n --> 0) {
+            res = res * 2;
+        }
+
+        return res;
+    }
+
 
     /**
      * Takes a user query and finds the grid of images that best matches the query. These
@@ -44,8 +165,25 @@ public class Rasterer {
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
         // System.out.println(params);
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
-                           + "your browser.");
+        double ullon = params.get("ullon");
+        double ullat = params.get("ullat");
+        double lrlon = params.get("lrlon");
+        double lrlat = params.get("lrlat");
+        QueryBox queryBox = new QueryBox(ullon, ullat, lrlon, lrlat);
+        queryBox.setH(params.get("h"));
+        queryBox.setW(params.get("w"));
+        solve(queryBox);
+        results.put("render_grid", filenames);
+        results.put("raster_ul_lon", rasterUllon);
+        results.put("raster_ul_lat", rasterUllat);
+        results.put("raster_lr_lon", rasterLrlon);
+        results.put("raster_lr_lat", rasterLrlat);
+        results.put("depth", depth);
+        results.put("query_success", true);
+        System.out.println(results);
+
+//        System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
+//                           + "your browser.");
         return results;
     }
 

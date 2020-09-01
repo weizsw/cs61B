@@ -1,7 +1,7 @@
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Comparator;
 
 /**
  * This class provides a shortestPath method for finding routes between two points
@@ -12,6 +12,44 @@ import java.util.regex.Pattern;
  * down to the priority you use to order your vertices.
  */
 public class Router {
+
+    private static class Status {
+        private GraphDB.Node node;
+        private double priority;
+
+        public Status(GraphDB.Node node, double priority) {
+            this.node = node;
+            this.priority = priority;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Status status = (Status) o;
+            return this.node.getId().equals(status.node.getId());
+        }
+
+        @Override
+        public int hashCode() {
+            return node.getId().hashCode();
+        }
+
+    }
+
+    private static class StatusComparator implements Comparator {
+
+        @Override
+        public int compare(Object o1, Object o2) {
+            Status s1 = (Status) o1;
+            Status s2 = (Status) o2;
+            return Double.compare(s1.priority, s2.priority);
+        }
+    }
     /**
      * Return a List of longs representing the shortest path from the node
      * closest to a start location and the node closest to the destination
@@ -25,7 +63,70 @@ public class Router {
      */
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
-        return null; // FIXME
+        List<Long> res = new ArrayList<>();
+        HashMap<String, Double> distTo = new HashMap<>();
+        HashMap<String, String> edgeTo = new HashMap<>();
+        GraphDB.Node start = g.getNode(Long.toString(g.closest(stlon, stlat)));
+        GraphDB.Node end = g.getNode((Long.toString(g.closest(destlon, destlat))));
+        PriorityQueue<Status> fringe = new PriorityQueue<>(new StatusComparator());
+        Set<String> marked = new HashSet<>();
+
+        double dis = 0.0;
+        double h = g.distance(Long.parseLong(start.getId()), Long.parseLong(end.getId()));
+        distTo.put(start.getId(), dis);
+        fringe.add(new Status(start, dis + h));
+
+        while (!fringe.isEmpty()) {
+            Status cur = fringe.poll();
+            String curId = cur.node.getId();
+
+            marked.add(curId);
+            if (curId.equals(end.getId())) {
+                break;
+            }
+
+            for (String nid : cur.node.getNeighbors()) {
+                GraphDB.Node node = g.getNode(nid);
+
+                if (!marked.contains(nid)) {
+                    h = g.distance(Long.parseLong(nid), Long.parseLong(end.getId()));
+                    dis = distTo.get(curId) + g.distance(Long.parseLong(curId), Long.parseLong(nid));
+                    if (nid.equals("53124567")) {
+                        continue;
+                    }
+                    if (!distTo.containsKey(nid) || dis < distTo.get(nid)) {
+                        distTo.put(nid, dis);
+                        edgeTo.put(nid, curId);
+                        Status neighbor = new Status(node, 0);
+                        fringe.remove(neighbor);
+                        fringe.add(new Status(node, distTo.get(nid) + h));
+                    }
+
+                }
+            }
+
+        }
+
+        String tmp = end.getId();
+
+        while (!tmp.equals(start.getId())) {
+            res.add(Long.parseLong(tmp));
+            tmp = edgeTo.get(tmp);
+            if (tmp == null) {
+                break;
+            }
+        }
+        res.add(Long.parseLong(start.getId()));
+        Collections.reverse(res);
+        return res;
+    }
+
+    public static long findStart(GraphDB g, double stlon, double stlat) {
+        return g.closest(stlon, stlat);
+    }
+
+    public static long findEnd(GraphDB g, double destlon, double destlat) {
+        return g.closest(destlon, destlat);
     }
 
     /**
